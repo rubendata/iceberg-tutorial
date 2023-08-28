@@ -19,8 +19,17 @@ The repo is to supplement the [youtube video](https://youtu.be/iGvj1gjbwl0) on I
 - Glue database
 - Athena work group
 
+aws cloudformation create-stack \                                              
+    --stack-name ruben-iceberg \
+    --template-body file://cf_reasources.yaml \
+    --region eu-west-1 \
+    --parameters ParameterKey=S3PySparkBucketName,ParameterValue=iceberg-tutorial-bucket-ruben
+
+aws cloudformation describe-stacks --stack-name ruben-iceberg --region eu-west-1
+
 2. Upload the data from the `data` folder
 
+aws s3 cp data/csv/taxi.csv s3://iceberg-tutorial-bucket-ruben/data/
 
 ## Main Tutorial
 1. Upload the CSV data from `./data/csv`
@@ -143,7 +152,35 @@ The repo is to supplement the [youtube video](https://youtu.be/iGvj1gjbwl0) on I
 11. Delete from iceberg table
     ```
     DELETE FROM nyc_taxi_iceberg_data_manipulation WHERE year(tpep_pickup_datetime) != 2008; 
+
     ```
+
+# WIP RUBEN
+This is how you would update data in Athena without iceberg:
+
+### update not supported in Athena without iceberg
+UPDATE nyc_taxi_csv SET passenger_count = 4.0 WHERE vendorid = 2 AND year(tpep_pickup_datetime) =2022;
+
+#### error message
+Failed: NOT_SUPPORTED: Modifying Hive table rows is only supported for transactional tables
+This query ran against the "iceberg_tutorial_db" database, unless qualified by the query. Please post the error message on our forum  or contact customer support  with Query Id: ba48c590-32fe-4cef-866e-b96b54fa2996
+
+### create tmp table with updated data
+-- Create a new table with updated data and perform column operations
+CREATE TABLE updated_nyc_taxi AS
+SELECT
+  *,
+  CASE
+    WHEN vendorid = 2 AND year(tpep_pickup_datetime) = 2022 THEN 4.0
+    ELSE passenger_count
+  END AS passenger_count_update
+FROM
+  nyc_taxi_csv;
+### delete old passenger column
+-- Drop the passenger_count column
+ALTER TABLE updated_nyc_taxi DROP COLUMN passenger_count;
+
+
 
 ## Creators
 
