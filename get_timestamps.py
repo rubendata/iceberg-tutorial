@@ -44,7 +44,7 @@ print("Distinct Timestamps:")
 for timestamp in distinct_timestamps:
     print(f"- {timestamp}")
 
-print("\nSorted Object List:")
-for object_info in sorted_object_info:
-    object_key, timestamp = object_info
-    print(f"Object Key: {object_key}, Timestamp: {timestamp}")
+# print("\nSorted Object List:")
+# for object_info in sorted_object_info:
+#     object_key, timestamp = object_info
+#     print(f"Object Key: {object_key}, Timestamp: {timestamp}")

@@ -177,12 +177,27 @@ aws s3 cp data/csv/taxi.csv s3://iceberg-tutorial-bucket-ruben/csv/
 
     ![Alt text](image.png)
 
+    AWS docs reference: https://docs.aws.amazon.com/athena/latest/ug/querying-iceberg-table-data.html
+
 11. Delete from iceberg table
     ```
-    DELETE FROM nyc_taxi_iceberg_data_manipulation WHERE year(tpep_pickup_datetime) != 2008; 
+    DELETE FROM nyc_taxi_iceberg_data_manipulation WHERE year(tpep_pickup_datetime) = 2008; 
     ```
 
+12. Check the snapshots that were created
+    ```
+    SELECT * FROM "iceberg_tutorial_db"."nyc_taxi_iceberg_data_manipulation$snapshots"
+    ```
+
+    example output:
+    ![Alt text](image-2.png)
 # WIP RUBEN
+
+## Problems with tables without iceberg using Athena
+
+- UPDATE is not supported
+- DELETE is not supported
+- ALTER TABLE not supported: for example if you want to update values you could do it in a values_updated column, drop the old_column and rename the values_updated to the old_column
 
 
 ## Do an update without iceberg
@@ -245,6 +260,27 @@ SELECT * FROM updated_nyc_taxi;
 ```
 DROP TABLE `updated_nyc_taxi`;
 ```
+
+
+
+## TODO: 
+- EMR https://aws.amazon.com/blogs/big-data/use-apache-iceberg-in-a-data-lake-to-support-incremental-data-processing/
+- map the cases to iceberg capabilities: ACID transactions, upserts and deletes, latest state, query performance, time travel (or is this latest state?; is latest state part of ACID transactions?)
+- Glue
+- OPTIMIZE and VACUUM
+- more: https://docs.aws.amazon.com/athena/latest/ug/querying-iceberg-additional-resources.html
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Creators
 
