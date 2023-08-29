@@ -156,30 +156,57 @@ aws s3 cp data/csv/taxi.csv s3://iceberg-tutorial-bucket-ruben/data/
     ```
 
 # WIP RUBEN
-This is how you would update data in Athena without iceberg:
+
+
+## Do an update without iceberg
+usinv csv table as example
 
 ### update not supported in Athena without iceberg
+Updates are not supported in Athena with csv tables
+
+try to run:
+
 UPDATE nyc_taxi_csv SET passenger_count = 4.0 WHERE vendorid = 2 AND year(tpep_pickup_datetime) =2022;
 
-#### error message
+
+you will get an error:
+
 Failed: NOT_SUPPORTED: Modifying Hive table rows is only supported for transactional tables
 This query ran against the "iceberg_tutorial_db" database, unless qualified by the query. Please post the error message on our forum  or contact customer support  with Query Id: ba48c590-32fe-4cef-866e-b96b54fa2996
 
 ### create tmp table with updated data
--- Create a new table with updated data and perform column operations
+
+#### get column_names
+-- Retrieve column names as a single comma-separated value
+SELECT array_join(array_agg(column_name), ', ')
+FROM information_schema.columns
+WHERE table_name = 'updated_nyc_taxi' AND column_name != 'passenger_count'; 
+
+#### manually insert column names here
+-- Create a new table with updated passenger_count values
 CREATE TABLE updated_nyc_taxi AS
 SELECT
-  *,
+  vendorid, tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance, ratecodeid, store_and_fwd_flag, pulocationid, dolocationid, payment_type, fare_amount, extra, mta_tax, tip_amount, tolls_amount, improvement_surcharge, total_amount, congestion_surcharge, airport_fee,
   CASE
     WHEN vendorid = 2 AND year(tpep_pickup_datetime) = 2022 THEN 4.0
     ELSE passenger_count
-  END AS passenger_count_update
+  END AS passenger_count -- Keep the column name as passenger_count
 FROM
-  nyc_taxi_csv;
-### delete old passenger column
--- Drop the passenger_count column
-ALTER TABLE updated_nyc_taxi DROP COLUMN passenger_count;
+  "nyc_taxi_csv";
 
+#### validate if passenger count is 4
+SELECT * FROM updated_nyc_taxi WHERE vendorid = 2 and year(tpep_pickup_datetime) =2022 limit 10;
+
+
+### delete the old table
+DROP TABLE nyc_taxi_csv;
+
+### copy table with updated content 
+CREATE TABLE nyc_taxi_csv AS
+SELECT * FROM updated_nyc_taxi;
+
+### delete the temp table
+DROP TABLE `updated_nyc_taxi`;
 
 
 ## Creators
