@@ -165,9 +165,9 @@ usinv csv table as example
 Updates are not supported in Athena with csv tables
 
 try to run:
-
-UPDATE nyc_taxi_csv SET passenger_count = 4.0 WHERE vendorid = 2 AND year(tpep_pickup_datetime) =2022;
-
+    ```
+    UPDATE nyc_taxi_csv SET passenger_count = 4.0 WHERE vendorid = 2 AND year(tpep_pickup_datetime) =2022;
+    ```
 
 you will get an error:
 
@@ -177,37 +177,46 @@ This query ran against the "iceberg_tutorial_db" database, unless qualified by t
 ### create tmp table with updated data
 
 #### get column_names
--- Retrieve column names as a single comma-separated value
-SELECT array_join(array_agg(column_name), ', ')
-FROM information_schema.columns
-WHERE table_name = 'updated_nyc_taxi' AND column_name != 'passenger_count'; 
-
+    ```
+    -- Retrieve column names as a single comma-separated value
+    SELECT array_join(array_agg(column_name), ', ')
+    FROM information_schema.columns
+    WHERE table_name = 'updated_nyc_taxi' AND column_name != 'passenger_count'; 
+    ```
 #### manually insert column names here
--- Create a new table with updated passenger_count values
-CREATE TABLE updated_nyc_taxi AS
-SELECT
-  vendorid, tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance, ratecodeid, store_and_fwd_flag, pulocationid, dolocationid, payment_type, fare_amount, extra, mta_tax, tip_amount, tolls_amount, improvement_surcharge, total_amount, congestion_surcharge, airport_fee,
-  CASE
-    WHEN vendorid = 2 AND year(tpep_pickup_datetime) = 2022 THEN 4.0
-    ELSE passenger_count
-  END AS passenger_count -- Keep the column name as passenger_count
-FROM
-  "nyc_taxi_csv";
+    ```
+    -- Create a new table with updated passenger_count values
+    CREATE TABLE updated_nyc_taxi AS
+    SELECT
+      vendorid, tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance, ratecodeid, store_and_fwd_flag, pulocationid, dolocationid, payment_type, fare_amount, extra, mta_tax, tip_amount, tolls_amount, improvement_surcharge, total_amount, congestion_surcharge, airport_fee,
+      CASE
+        WHEN vendorid = 2 AND year(tpep_pickup_datetime) = 2022 THEN 4.0
+        ELSE passenger_count
+      END AS passenger_count -- Keep the column name as passenger_count
+    FROM
+      "nyc_taxi_csv";
+    ```
 
 #### validate if passenger count is 4
-SELECT * FROM updated_nyc_taxi WHERE vendorid = 2 and year(tpep_pickup_datetime) =2022 limit 10;
-
+    ```
+    SELECT * FROM updated_nyc_taxi WHERE vendorid = 2 and year(tpep_pickup_datetime) =2022 limit 10;
+    ```
 
 ### delete the old table
-DROP TABLE nyc_taxi_csv;
+    ```
+    DROP TABLE nyc_taxi_csv;
+    ```
 
 ### copy table with updated content 
-CREATE TABLE nyc_taxi_csv AS
-SELECT * FROM updated_nyc_taxi;
+    ```
+    CREATE TABLE nyc_taxi_csv AS
+    SELECT * FROM updated_nyc_taxi;
+    ```
 
 ### delete the temp table
-DROP TABLE `updated_nyc_taxi`;
-
+    ```
+    DROP TABLE `updated_nyc_taxi`;
+    ```
 
 ## Creators
 
