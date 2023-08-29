@@ -154,13 +154,32 @@ aws s3 cp data/csv/taxi.csv s3://iceberg-tutorial-bucket-ruben/csv/
     SELECT * FROM nyc_taxi_iceberg_data_manipulation WHERE vendorid = 2 and year(tpep_pickup_datetime) =2022 limit 10;
     ```
 10. Time travel query
+
+    You need to get the right timestamp. With step 9 you can see the current data. with time travel you can view the data how it was at a specific timestamp. To get these timestamps you can look into the s3 bucket in the metadata files. Or you can run the get_timestamps.py to get the timestamps to include into the following query. Make sure you change the bucket_name and folder_prefix according to your settings.
+
+    Using the get_timestamps.py
+    ![Alt text](image-1.png)
+
     ```
-    SELECT * FROM nyc_taxi_iceberg_data_manipulation FOR SYSTEM_TIME AS OF TIMESTAMP '2022-11-01 22:00:00' WHERE vendorid = 2 and year(tpep_pickup_datetime)= 2022 limit 10; 
+    SELECT * FROM nyc_taxi_iceberg_data_manipulation 
+    FOR TIMESTAMP  AS OF TIMESTAMP '2023-08-28 14:46:38+00:00' 
+    WHERE vendorid = 2 and year(tpep_pickup_datetime)= 2022 
     ```
+
+    Example result:
+    This shows the result before the data was changed.
+    Query used:
+    ```
+    SELECT * FROM nyc_taxi_iceberg_data_manipulation 
+    FOR TIMESTAMP AS OF TIMESTAMP '2023-08-28 14:46:38+00:00' 
+    WHERE vendorid = 2 and year(tpep_pickup_datetime)= 2022
+    ```
+
+    ![Alt text](image.png)
+
 11. Delete from iceberg table
     ```
     DELETE FROM nyc_taxi_iceberg_data_manipulation WHERE year(tpep_pickup_datetime) != 2008; 
-
     ```
 
 # WIP RUBEN
